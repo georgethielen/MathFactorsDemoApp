@@ -85,19 +85,25 @@ class _InteractiveCircleState extends State<InteractiveCircle> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Text(
-              '${widget.circle.value}',
-              style: TextStyle(
-                fontSize: widget.circle.radius * 0.5,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: const [
-                  Shadow(
-                    blurRadius: 4.0,
-                    color: Colors.black45,
-                    offset: Offset(1.0, 1.0),
+            Padding(
+              padding: EdgeInsets.all(widget.circle.radius * 0.15),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${widget.circle.value}',
+                  style: TextStyle(
+                    fontSize: widget.circle.radius * 0.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: const [
+                      Shadow(
+                        blurRadius: 4.0,
+                        color: Colors.black45,
+                        offset: Offset(1.0, 1.0),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             ..._buildFactors(gameState.factorMode),

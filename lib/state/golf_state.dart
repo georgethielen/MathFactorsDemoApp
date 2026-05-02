@@ -38,6 +38,10 @@ class GolfState extends ChangeNotifier {
       position: level.startPosition,
       velocity: Offset.zero,
     );
+    // Use custom radius from editor if set, otherwise keep the formula default
+    if (level.playerRadius != null) {
+      playerBall!.radius = level.playerRadius!;
+    }
     notifyListeners();
   }
 
@@ -116,6 +120,8 @@ class GolfState extends ChangeNotifier {
       if (factor.isUsed) continue;
       double dist = (ball.position - factor.position).distance;
       if (dist < ball.radius + factor.radius) {
+        _resolveCircleCollision(ball, factor.position, factor.radius);
+
         ball.updateValue(ball.value * factor.value);
         factor.isUsed = true;
         changed = true;
@@ -127,7 +133,11 @@ class GolfState extends ChangeNotifier {
       isCompleted = true;
       changed = true;
     } else if (ball.velocity.distance == 0) {
-      if (_isImpossible()) {
+      // Only compute impossibility once when ball first stops
+      if (_impossibleCached == null) {
+        _impossibleCached = _isImpossible();
+      }
+      if (_impossibleCached == true) {
         if (stoppedTime != null && DateTime.now().difference(stoppedTime!).inSeconds >= 10) {
           if (!showRetryPrompt) {
             showRetryPrompt = true;
@@ -139,6 +149,9 @@ class GolfState extends ChangeNotifier {
 
     if (changed) notifyListeners();
   }
+
+  // Cached impossibility result — cleared when ball moves again
+  bool? _impossibleCached;
 
   void _handleWallCollision(CircleModel ball, Rect rect) {
     double testX = ball.position.dx;
@@ -185,22 +198,31 @@ class GolfState extends ChangeNotifier {
     if (playerBall == null || currentLevel == null) return false;
     List<int> rFactors = currentLevel!.staticFactors.where((f) => !f.isUsed).map((e) => e.value).toList();
     List<int> rDivisors = currentLevel!.divideBumpers.where((f) => !f.isUsed).map((e) => e.divideValue).toList();
+
+    // With too many remaining elements, skip the check — assume still possible
+    if (rFactors.length + rDivisors.length > 12) return false;
     
-    return !_checkReachable(playerBall!.value, rFactors, rDivisors, currentLevel!.targetValue);
+    Set<String> visited = {};
+    return !_checkReachable(playerBall!.value, rFactors, rDivisors, currentLevel!.targetValue, visited);
   }
 
-  bool _checkReachable(int currentVal, List<int> remainingFactors, List<int> remainingDivisors, int target) {
+  bool _checkReachable(int currentVal, List<int> remainingFactors, List<int> remainingDivisors, int target, Set<String> visited) {
     if (currentVal == target) return true;
     if (remainingFactors.isEmpty && remainingDivisors.isEmpty) return false;
 
+    // Memoize to avoid recomputing the same state
+    String key = '$currentVal|${remainingFactors.join(',')}|${remainingDivisors.join(',')}';
+    if (visited.contains(key)) return false;
+    visited.add(key);
+
     for (int i = 0; i < remainingFactors.length; i++) {
       var nextFactors = List<int>.from(remainingFactors)..removeAt(i);
-      if (_checkReachable(currentVal * remainingFactors[i], nextFactors, remainingDivisors, target)) return true;
+      if (_checkReachable(currentVal * remainingFactors[i], nextFactors, remainingDivisors, target, visited)) return true;
     }
     for (int i = 0; i < remainingDivisors.length; i++) {
       if (currentVal % remainingDivisors[i] == 0) {
         var nextDivisors = List<int>.from(remainingDivisors)..removeAt(i);
-        if (_checkReachable(currentVal ~/ remainingDivisors[i], remainingFactors, nextDivisors, target)) return true;
+        if (_checkReachable(currentVal ~/ remainingDivisors[i], remainingFactors, nextDivisors, target, visited)) return true;
       }
     }
     return false;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import '../state/golf_state.dart';
+import 'level_editor.dart';
 
 class GolfBoardScreen extends StatefulWidget {
   const GolfBoardScreen({super.key});
@@ -47,12 +48,28 @@ class _GolfBoardScreenState extends State<GolfBoardScreen> with SingleTickerProv
       appBar: AppBar(
         title: Consumer<GolfState>(
           builder: (context, state, _) {
-            return Text('Level ${state.currentLevel?.id} - Strokes: ${state.strokes}');
+            return Text('${state.currentLevel?.name ?? 'Level'} - Strokes: ${state.strokes}');
           },
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Open in Editor',
+            onPressed: () {
+              final state = context.read<GolfState>();
+              if (state.currentLevel != null) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LevelEditorScreen(initialLevel: state.currentLevel!),
+                  ),
+                );
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: 'Restart Level',
             onPressed: () {
               final state = context.read<GolfState>();
               if (state.currentLevel != null) {
@@ -108,12 +125,18 @@ class _GolfBoardScreenState extends State<GolfBoardScreen> with SingleTickerProv
                               border: Border.all(color: Colors.white24, width: 2),
                             ),
                             alignment: Alignment.center,
-                            child: Text(
-                              '÷${bumper.divideValue}',
-                              style: TextStyle(
-                                fontSize: bumper.radius * 0.5,
-                                fontWeight: FontWeight.bold,
-                                color: divisible ? Colors.white : Colors.white54,
+                            child: Padding(
+                              padding: EdgeInsets.all(bumper.radius * 0.1),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '÷${bumper.divideValue}',
+                                  style: TextStyle(
+                                    fontSize: bumper.radius * 0.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: divisible ? Colors.white : Colors.white54,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -131,12 +154,18 @@ class _GolfBoardScreenState extends State<GolfBoardScreen> with SingleTickerProv
                             color: Colors.orange,
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            'x${factor.value}',
-                            style: TextStyle(
-                              fontSize: factor.radius * 0.6,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          child: Padding(
+                            padding: EdgeInsets.all(factor.radius * 0.1),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'x${factor.value}',
+                                style: TextStyle(
+                                  fontSize: factor.radius * 0.6,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -154,12 +183,18 @@ class _GolfBoardScreenState extends State<GolfBoardScreen> with SingleTickerProv
                             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            '${state.playerBall!.value}',
-                            style: TextStyle(
-                              fontSize: state.playerBall!.radius * 0.8,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                          child: Padding(
+                            padding: EdgeInsets.all(state.playerBall!.radius * 0.1),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${state.playerBall!.value}',
+                                style: TextStyle(
+                                  fontSize: state.playerBall!.radius * 0.8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ),
                           ),
                         ),

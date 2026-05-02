@@ -7,6 +7,7 @@ class LevelModel {
   final int startValue;
   final int targetValue;
   final Offset startPosition;
+  final double? playerRadius;
   final List<Wall> walls;
   final List<DivideBumper> divideBumpers;
   final List<StaticFactor> staticFactors;
@@ -17,6 +18,7 @@ class LevelModel {
     required this.startValue,
     required this.targetValue,
     required this.startPosition,
+    this.playerRadius,
     this.walls = const [],
     this.divideBumpers = const [],
     this.staticFactors = const [],
