@@ -55,10 +55,10 @@ class GameState extends ChangeNotifier {
     Offset vel = dist > 0 ? (dir / dist) * 200 : const Offset(200, 200);
 
     // Give opposite velocity to source, capped
-    Offset recoil = vel * (factor / source.value);
-    // if (recoil.distance > 1000) {
-    //   recoil = (recoil / recoil.distance) * 1000;
-    // }
+    Offset recoil = vel * 0.75 + vel * (factor / source.value);
+    if (recoil.distance > 500) {
+      recoil = (recoil / recoil.distance) * 500;
+    }
     source.velocity -= recoil;
 
     circles.add(

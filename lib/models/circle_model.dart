@@ -29,6 +29,6 @@ class CircleModel {
   }
 
   static double calculateRadius(int val) {
-    return max(70.0, 50.0 + sqrt(val) * 4.0); 
+    return max(40.0, 30.0 + sqrt(val) * 3.0); 
   }
 }
